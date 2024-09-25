@@ -6,6 +6,8 @@ public class PlayerMovement : MonoBehaviour
 {
     public Animator anim;
 
+    private IInteractable interactable; // Added interactable reference
+
     public float moveSpeed;
     private Rigidbody2D rb;
     private float x;
@@ -35,20 +37,12 @@ public class PlayerMovement : MonoBehaviour
         x = Input.GetAxisRaw("Horizontal");
         y = Input.GetAxisRaw("Vertical");
 
-        input = new Vector2(x, y); // Assign new input vector
-        input.Normalize(); // Normalize the vector for consistent speed in all directions
+        input = new Vector2(x, y).normalized; // Normalize for consistent speed in all directions
     }
 
     private void Animate()
     {
-        if (input.magnitude > 0.1f || input.magnitude < -0.1f)
-        {
-            moving = true;
-        }
-        else
-        {
-            moving = false;
-        }
+        moving = input.magnitude > 0.1f;
 
         if (moving)
         {
@@ -57,5 +51,30 @@ public class PlayerMovement : MonoBehaviour
         }
 
         anim.SetBool("Moving", moving);
+    }
+
+    // Detect interaction with objects tagged as "Interactable"
+    public void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Interactable"))
+        {
+            interactable = collision.GetComponent<IInteractable>();
+            if (interactable != null)
+            {
+                interactable.Interact(); // Trigger open chest animation
+            }
+        }
+    }
+
+    public void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.CompareTag("Interactable"))
+        {
+            if (interactable != null)
+            {
+                interactable.StopInteract(); // Trigger close chest animation
+                interactable = null;
+            }
+        }
     }
 }
