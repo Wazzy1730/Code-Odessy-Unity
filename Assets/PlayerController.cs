@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEngine.InputSystem;
 using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
@@ -13,19 +14,38 @@ public class PlayerMovement : MonoBehaviour
     private float x;
     private float y;
     private Vector2 input;
-
     private bool moving;
+
+    [SerializeField] private InputActionReference moveActionToUse;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        if (anim == null)
+        {
+            anim = GetComponent<Animator>(); // Automatically assign Animator if it's not set in the Inspector
+        }
     }
+
 
     private void Update()
     {
+        if (moveActionToUse != null)
+        {
+            Vector2 moveDirection = moveActionToUse.action.ReadValue<Vector2>();
+            transform.Translate(moveDirection * moveSpeed * Time.deltaTime);
+        }
+        else
+        {
+            Debug.LogError("moveActionToUse is not assigned.");
+        }
+
         GetInput();
         Animate();
     }
+
+
 
     private void FixedUpdate()
     {
